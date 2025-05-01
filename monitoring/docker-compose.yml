@@ -1,0 +1,57 @@
+# ... (prometheus y grafana aquí arriba) ...
+
+  zabbix-db:
+    image: mysql:8.0
+    container_name: zabbix-db
+    command: # <-- AÑADIR/ASEGURAR ESTA SECCIÓN
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: zabbix
+      MYSQL_DATABASE: zabbix # <-- AÑADIR/ASEGURAR
+      MYSQL_USER: zabbix     # <-- AÑADIR/ASEGURAR
+      MYSQL_PASSWORD: <TU_PASSWORD_SEGURO_AQUI!> # <<< ¡Elige y pon tu password!
+    networks:
+      - red-monitoreo
+    volumes:
+      - zabbix_db_data:/var/lib/mysql
+    restart: unless-stopped
+
+  zabbix-server:
+    image: zabbix/zabbix-server-mysql
+    container_name: zabbix-server
+    ports:
+      - "10051:10051"
+    environment:
+      DB_SERVER_HOST: zabbix-db
+      MYSQL_DATABASE: zabbix # <-- AÑADIR/ASEGURAR
+      MYSQL_USER: zabbix     # <-- AÑADIR/ASEGURAR
+      MYSQL_PASSWORD: <TU_PASSWORD_SEGURO_AQUI!> # <<< ¡Usa el MISMO password!
+    networks:
+      - red-monitoreo
+    depends_on:
+      - zabbix-db
+    restart: unless-stopped
+
+  zabbix-web:
+    image: zabbix/zabbix-web-nginx-mysql
+    container_name: zabbix-web
+    ports:
+      - "8080:8080"
+    environment:
+      DB_SERVER_HOST: zabbix-db
+      MYSQL_DATABASE: zabbix # <-- AÑADIR/ASEGURAR
+      MYSQL_USER: zabbix     # <-- AÑADIR/ASEGURAR
+      MYSQL_PASSWORD: <TU_PASSWORD_SEGURO_AQUI!> # <<< ¡Usa el MISMO password!
+      ZBX_SERVER_HOST: zabbix-server
+      PHP_TZ: America/Bogota # Ajusta tu zona horaria
+    networks:
+      - red-monitoreo
+    depends_on:
+      - zabbix-server
+      - zabbix-db
+    restart: unless-stopped
+
+# ... (networks y volumes aquí abajo) ...
+volumes: # Asegúrate de definir el volumen
+  zabbix_db_data:

@@ -1,0 +1,26 @@
+global:
+  scrape_interval: 15s # Frecuencia de recolección
+
+scrape_configs:
+  # Job para monitorear al propio Prometheus
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Job para monitorear las Máquinas Virtuales (VMs)
+  - job_name: 'qemu-vms'
+    static_configs:
+      - targets:
+          # IPs estáticas de tus VMs + puerto Node Exporter (9100)
+          - '192.168.100.10:9100' # IP Rocky VM (Verifica/Ajusta si es otra)
+          - '192.168.100.11:9100' # IP Manjaro VM (Verifica/Ajusta si es otra)
+          - '192.168.100.12:9100' # IP Arch VM (Verifica/Ajusta si es otra)
+
+  # Job para monitorear los Contenedores Docker
+  - job_name: 'docker-containers'
+    static_configs:
+      - targets:
+          # IPs de tus contenedores en red-monitoreo + puerto Node Exporter (9100)
+          - '192.168.100.130:9100' # IP garuda-like
+          - '192.168.100.129:9100' # IP contenedor-alpine-netdata
+          - '192.168.100.131:9100' # IP contenedor-debian
